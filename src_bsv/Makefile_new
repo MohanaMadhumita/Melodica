@@ -6,12 +6,12 @@ default: compile link simulate clean
 #BSC_COMPILATION_FLAGS += \
 #		 -D PositCore_AM
 BSC_COMPILATION_FLAGS += \
-#		 -D NORM_EXT 
+		 -D NORM_EXT 
 .PHONY: compile
 compile:
 	@echo Compiling...
 	mkdir -p builds
-	bsc -u -sim -simdir builds -bdir builds -info-dir builds $(BSC_COMPILATION_FLAGS)-keep-fires -aggressive-conditions -p .:%/Prelude:%/Libraries:%/Libraries/BlueNoC:./common:./Fused_Op:./lib:./FtoP:./QtoP:./PtoF:./PtoQ:./Adder:./Multiplier:./Divider -g mkTb  test_v1.bsv 
+	bsc -u -sim -simdir builds -bdir builds -info-dir builds $(BSC_COMPILATION_FLAGS)-keep-fires -aggressive-conditions -p .:%/Prelude:%/Libraries:%/Libraries/BlueNoC:./common:./Fused_Op:./lib:./FtoP:./QtoP:./PtoF:./PtoQ:./Adder:./Multiplier:./Divider -g mkTb  test_v2.bsv 
 	@echo Compilation finished
 
 .PHONY: link

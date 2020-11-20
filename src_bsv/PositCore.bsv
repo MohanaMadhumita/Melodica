@@ -19,8 +19,10 @@ import FMA_PNE_Quire_PC :: *;
 import FDA_PNE_Quire_PC :: *;
 import FtoP_PNE_PC :: *;
 import PtoF_PNE_PC :: *;
+import PtoF_Types::*;
 import PositToQuire_PNE_PC :: *;
 import QuireToPosit_PNE_PC :: *;
+//import PositCore_Types :: *;
 `ifdef BASIC_OPS
 import Add_PNE_PC :: *;
 import Mul_PNE_PC :: *;
@@ -33,6 +35,7 @@ import Utils  :: *;
 import FPU_Types :: *;
 `else
 // Type definitions
+
 typedef FloatingPoint#(11,52) FDouble;
 typedef FloatingPoint#(8,23)  FSingle;
 
@@ -41,6 +44,7 @@ typedef union tagged {
    FSingle S;
    Bit #(PositWidth) P;
    } FloatU deriving(Bits,Eq);
+
 
 typedef Tuple2#( FloatU, FloatingPoint::Exception )       Fpu_Rsp;
 `endif

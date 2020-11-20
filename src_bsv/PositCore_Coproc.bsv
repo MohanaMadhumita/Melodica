@@ -11,7 +11,6 @@ import ConfigReg :: *;
 import Vector :: * ;
 
 // Project imports
-import PositCore_Types :: *;
 import Extracter :: *;
 import Normalizer :: *;
 import Extracter_Types :: *;
@@ -41,20 +40,22 @@ import Utils  :: *;
 `ifdef QUILLS
 import FPU_Types :: *;
 `else
-//----------------------------------------------------------------------------------------------------
 // Type definitions
-/*
+
 typedef FloatingPoint#(11,52) FDouble;
 typedef FloatingPoint#(8,23)  FSingle;
 
 typedef union tagged {
    FDouble D;
    FSingle S;
+   Bit #(PositWidth) P;
    } FloatU deriving(Bits,Eq);
-*/
-typedef Tuple2#( FloatU, FloatingPoint::Exception ) FloatE;	// all info about output Floating point 
 
-typedef Tuple2#( Maybe#(FloatE), Bit #(1) )   Fpu_Rsp_accel;		 // Server response which include valid_bit
+
+typedef Tuple2#( FloatU, FloatingPoint::Exception )       Fpu_Rsp;
+`endif
+
+typedef Tuple2#( Maybe#(Fpu_Rsp), Bit #(1) )   Fpu_Rsp_accel;		 // Server response which include valid_bit
 
 typedef enum {RST_Q, FMA_P, FMS_P, RD_Q} PositCmds deriving (Bits, Eq, FShow);		//for 3 opcodes currently...FMS to be included
 
@@ -129,7 +130,7 @@ module mkPositCore_accel #(Bit #(4) verbosity) (PositCore_IFC_accel);
 	rule reset_quire(tpl_3(ffI.first) == RST_Q && rg_queue[1] == 5'b0 );
 		rg_quire 	<= 0;
 		rg_quire_busy   <= 1'b0;
-		Maybe#(FloatE) out_ffO= tagged Invalid;
+		Maybe#(Fpu_Rsp) out_ffO= tagged Invalid;
 		Bit#(1) valid_bit = 0;
 		ffO.enq(tuple2(out_ffO,valid_bit));
 		ffI.deq;
@@ -146,7 +147,7 @@ module mkPositCore_accel #(Bit #(4) verbosity) (PositCore_IFC_accel);
 		ftop2.compute.request.put(b_pack);				
 		opcode_in.enq(tpl_3(ffI.first));					
 		rg_queue[0] <= rg_queue[0] + 1;	
-		Maybe#(FloatE) out_ffO = tagged Invalid;
+		Maybe#(Fpu_Rsp) out_ffO = tagged Invalid;
 		Bit#(1) valid_bit = 0;
 		ffO.enq(tuple2(out_ffO,valid_bit));	
 		ffI.deq;
@@ -247,14 +248,14 @@ module mkPositCore_accel #(Bit #(4) verbosity) (PositCore_IFC_accel);
 			let addOut <- adder.inoutifc.response.get();
 			rg_queue[0] <= rg_queue[0] - 1;
 			rg_quire_busy <= 1'b0;
-//			Maybe#(FloatE) out_ffO = tagged Invalid;
+//			Maybe#(Fpu_Rsp) out_ffO = tagged Invalid;
 //			ffO.enq(out_ffO);
 		end
 //		else if(tpl_2(ff_mul_Out.first) == FMS_P)	begin
 //			let subOut <- subtracter.inoutifc.response.get();
 //			rg_queue[0] <= rg_queue[0] - 1;
 //			rg_quire_busy <= 1'b0;
-//			Maybe#(FloatE) out_ffO = tagged Invalid;
+//			Maybe#(Fpu_Rsp) out_ffO = tagged Invalid;
 //			ffO.enq(out_ffO);
 //		end
 
@@ -325,9 +326,12 @@ module mkPositCore_accel #(Bit #(4) verbosity) (PositCore_IFC_accel);
 		FSingle fs = FSingle{sign : unpack(msb(out_pf.float_out)), 
 								 exp : (out_pf.float_out[valueOf(FloatExpoBegin):valueOf(FloatFracWidth)]), 
 								 sfd : truncate(out_pf.float_out) };
+		excep.overflow = out_pf.zero_infinity_flag == INF;
+		excep.underflow = out_pf.zero_infinity_flag == ZERO && out_pf.rounding;
+		excep.inexact = out_pf.rounding;
 		FloatU out_float = tagged S fs;
-		FloatE out_E = tuple2(out_float,excep);
-		Maybe#(FloatE) out_ffO = tagged Valid out_E;
+		Fpu_Rsp out_E = tuple2(out_float,excep);
+		Maybe#(Fpu_Rsp) out_ffO = tagged Valid out_E;
 		Bit#(1) valid_bit = 1;
 		ffO.enq(tuple2(out_ffO, valid_bit));
 		opcode_ptof.deq;
