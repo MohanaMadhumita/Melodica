@@ -60,7 +60,7 @@ module mkAdder #(Reg #(Bit#(QuireWidth)) rg_quire)(Adder_IFC );
 		Bit#(1) all_bits_0 = ~reduceOr(sum_calc_unsigned);
 
 		PositType zero_infinity_flag0 = ((all_bits_0 & ~sign0) == 1'b1) && dIn.q1_zero_infinity_flag == REGULAR && dIn.q2_zero_infinity_flag == REGULAR  ? ZERO : REGULAR;
-		let d = Quire {
+		let d = Quire_Fields {
 			sign : sign0,
 			//taking care of corner cases for nan flag 
 			nan_flag : all_bits_0 & sign0 | dIn.q2_nan_flag | pack(dIn.q1_zero_infinity_flag == INF || dIn.q2_zero_infinity_flag == INF),

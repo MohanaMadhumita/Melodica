@@ -39,7 +39,7 @@ import Normalizer ::*;
 
 module mkFtoP_Extracter (FtoP_IFC );
    	FIFOF #(Stage0_fp )  fifo_stage0_reg <- mkFIFOF;
-	FIFOF #(Input_value_n )  fifo_output_reg <- mkFIFOF;
+	FIFOF #(Prenorm_Posit )  fifo_output_reg <- mkFIFOF;
 	// function checks if float is nan if exponent = 11..11, fraction > 00...000
 	function Bit#(1) fv_check_nan(Bit#(FloatExpWidth) expo_f,Bit#(FloatFracWidth) frac_f);
 		if(expo_f == '1 && frac_f != 0)
@@ -69,7 +69,7 @@ module mkFtoP_Extracter (FtoP_IFC );
 		//if the truncated bits are zero or not 
 		//if frac change < 0 then frac bits lost but if >0 then basically frac is maximum since scale is already maximum 
 		let truncated_frac_zero = dIn.frac_change < 0 ? pack(unpack(frac[abs(dIn.frac_change):0]) ==  0): (dIn.frac_change == 0 ?1'b1: 1'b0);					
-		fifo_output_reg.enq(Input_value_n {
+		fifo_output_reg.enq(Prenorm_Posit {
 		sign: dIn.sign,
 	 	zero_infinity_flag: dIn.zero_infinity_flag ,
 		nan_flag: dIn.nan_flag,

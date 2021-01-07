@@ -84,7 +84,7 @@ module mkPtoF_Extracter (PtoF_IFC );
 	
 interface Server inoutifc;
       interface Put request;
-         method Action put (Output_posit p);
+         method Action put (Extracted_Posit p);
 		let extOut = p;
 		//get extractor output
 		//calculate scale for posits and frac shift due to restrictions on scale sizes

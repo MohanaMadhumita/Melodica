@@ -114,15 +114,15 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 		if(tpl_4(ffI.first) == FDA_P || tpl_4(ffI.first) == FDS_P || tpl_4(ffI.first) == FMS_P || tpl_4(ffI.first) == FMA_P)
 `endif
 			begin
-				let in_posit1 = Input_posit {posit_inp : tpl_1(ffI.first).P};
+				let in_posit1 = tpl_1(ffI.first).P;
 			   	extracter1.inoutifc.request.put (in_posit1);
-				let in_posit2 = Input_posit {posit_inp : tpl_2(ffI.first).P};
+				let in_posit2 = tpl_2(ffI.first).P;
 `ifdef BASIC_OPS
 				if(tpl_4(ffI.first) == FMS_P || tpl_4(ffI.first) == FDS_P || tpl_4(ffI.first) == FSUB_P)
 `else
 				if(tpl_4(ffI.first) == FMS_P || tpl_4(ffI.first) == FDS_P)
 `endif
-					in_posit2 = Input_posit {posit_inp : twos_complement(tpl_2(ffI.first).P)};
+					in_posit2 = twos_complement(tpl_2(ffI.first).P);
 			   	extracter2.inoutifc.request.put (in_posit2);
 			end
 `ifndef ONLY_POSITS
@@ -134,7 +134,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 `endif
 		else if(tpl_4(ffI.first) == FCVT_S_P || tpl_4(ffI.first) == FCVT_R_P)
 			begin
-				let in_posit1 = Input_posit {posit_inp : tpl_1(ffI.first).P};
+				let in_posit1 = tpl_1(ffI.first).P;
 			   	extracter1.inoutifc.request.put (in_posit1);
 			end
 		opcode_in.enq(tpl_4(ffI.first));
@@ -151,7 +151,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 	rule rl_fma((opcode_in.first == FMA_P || opcode_in.first == FMS_P) && rg_quire_busy == 1'b0);
 		let extOut1 <- extracter1.inoutifc.response.get();
 	   	let extOut2 <- extracter2.inoutifc.response.get();
-		fma.compute.request.put((InputTwoExtractPosit{posit_inp_e1 : extOut1,posit_inp_e2 : extOut2}));
+		fma.compute.request.put(tuple2 (extOut1, extOut2));
 		opcode_out.enq(opcode_in.first);
 		opcode_in.deq;
 		rg_quire_busy <= 1'b1;
@@ -161,7 +161,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 	rule rl_fda((opcode_in.first == FDA_P || opcode_in.first == FDS_P) && rg_quire_busy == 1'b0);
 		let extOut1 <- extracter1.inoutifc.response.get();
 	   	let extOut2 <- extracter2.inoutifc.response.get();
-		fda.compute.request.put((InputTwoExtractPosit{posit_inp_e1 : extOut1,posit_inp_e2 : extOut2}));
+		fda.compute.request.put(tuple2 (extOut1, extOut2));
 		opcode_out.enq(opcode_in.first);
 		opcode_in.deq;
 		rg_quire_busy <= 1'b1;                
@@ -203,7 +203,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 	rule rl_add(opcode_in.first == FADD_P || opcode_in.first == FSUB_P );
 		let extOut1 <- extracter1.inoutifc.response.get();
 	   	let extOut2 <- extracter2.inoutifc.response.get();
-		add.compute.request.put((InputTwoExtractPosit{posit_inp_e1 : extOut1,posit_inp_e2 : extOut2}));
+		add.compute.request.put(tuple2 (extOut1, extOut2));
 		opcode.enq(opcode_in.first);
 		opcode_in.deq;
                 
@@ -212,7 +212,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 	rule rl_mul(opcode_in.first == FMUL_P);
 		let extOut1 <- extracter1.inoutifc.response.get();
 	   	let extOut2 <- extracter2.inoutifc.response.get();
-		mul.compute.request.put((InputTwoExtractPosit{posit_inp_e1 : extOut1,posit_inp_e2 : extOut2}));
+		mul.compute.request.put(tuple2 (extOut1, extOut2));
 		opcode.enq(opcode_in.first);
 		opcode_in.deq;
 	endrule
@@ -220,7 +220,7 @@ module mkPositCore #(Bit #(4) verbosity) (PositCore_IFC);
 	rule rl_div(opcode_in.first == FDIV_P);
 		let extOut1 <- extracter1.inoutifc.response.get();
 	   	let extOut2 <- extracter2.inoutifc.response.get();
-		div.compute.request.put((InputTwoExtractPosit{posit_inp_e1 : extOut1,posit_inp_e2 : extOut2}));
+		div.compute.request.put(tuple2 (extOut1, extOut2));
 		opcode.enq(opcode_in.first);
 		opcode_in.deq;
 	endrule

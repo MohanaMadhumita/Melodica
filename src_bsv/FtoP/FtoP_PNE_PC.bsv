@@ -39,12 +39,12 @@ import FtoP_Types	:: *;
 import Normalizer_Types	:: *;
 
 interface FtoP_PNE ;
-   interface Server #(Bit#(FloatWidth),Input_value_n) compute;
+   interface Server #(Bit#(FloatWidth),Prenorm_Posit) compute;
 endinterface
 
 module mkFtoP_PNE(FtoP_PNE);
 
-FIFO #(Input_value_n) ffO <- mkFIFO;
+FIFO #(Prenorm_Posit) ffO <- mkFIFO;
 FtoP_IFC  fToP <- mkFtoP_Extracter;
 
 rule rl_out;

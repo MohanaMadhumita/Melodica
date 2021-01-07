@@ -38,7 +38,7 @@ import PtoQ_Types	:: *;
 import Extracter_Types :: *;
 
 interface PositToQuire_PNE ;
-   interface Server #(Output_posit,Bit#(0)) compute;
+   interface Server #(Extracted_Posit,Bit#(0)) compute;
 endinterface
 
 module mkPositToQuire_PNE #(Reg #(Bit#(QuireWidth))  rg_quire)(PositToQuire_PNE);
@@ -52,7 +52,7 @@ rule rl_out;
 endrule
 interface Server compute;
       interface Put request;
-         method Action put (Output_posit p);
+         method Action put (Extracted_Posit p);
 		positToquire.inoutifc.request.put(p); 
          endmethod
       endinterface
