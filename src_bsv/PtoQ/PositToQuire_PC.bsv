@@ -38,13 +38,14 @@ import Extracter_Types	:: *;
 import PtoQ_Types	:: *;
 
 interface PositToQuire_IFC;
-   interface Server #(Output_posit,Bit#(0)) inoutifc;
+   interface Server #(Extracted_Posit,Bit#(0)) inoutifc;
 endinterface
 
 module mkPositToQuire #(Reg #(Bit#(QuireWidth))  rg_quire) (PositToQuire_IFC );
 	FIFOF #(Bit#(0))  fifo_output_reg <- mkFIFOF;
-	FIFOF #(Output_posit )  fifo_stage0_reg <- mkFIFOF;
-	FIFOF #(Stage1_qp )  fifo_stage1_reg <- mkFIFOF;
+        // Conversion Operations into the quire are not currently pipelined
+	FIFOF #(Extracted_Posit )  fifo_stage0_reg <- mkFIFOF1;
+	FIFOF #(Stage1_qp )  fifo_stage1_reg <- mkFIFOF1;
 
 	//This function will be used to get the Int-Frac value from the scale and frac value got from multiplying the values
 	function Bit#(IntWidthQuirePlusFracWidthQuire) calculate_frac_int(Bit#(FracWidthPlus1) f, Int#(ScaleWidthPlus1) s);
@@ -80,7 +81,7 @@ module mkPositToQuire #(Reg #(Bit#(QuireWidth))  rg_quire) (PositToQuire_IFC );
 
 interface Server inoutifc;
       interface Put request;
-         method Action put (Output_posit p);
+         method Action put (Extracted_Posit p);
 		// stage_1: calculate integer part of quire
 		//dIn reads the values from pipeline register stored from previous stage
 		let extOut = p;

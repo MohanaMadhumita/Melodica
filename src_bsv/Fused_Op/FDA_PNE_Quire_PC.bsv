@@ -46,7 +46,7 @@ import Divider_fda	:: *;
 import Common_Fused_Op :: *;
 
 interface FDA_PNE_Quire ;
-   interface Server #(InputTwoExtractPosit, Bit#(0)) compute;
+   interface Server #(Tuple2#(Extracted_Posit, Extracted_Posit), Bit#(0)) compute;
 endinterface
 
 module mkFDA_PNE_Quire #(Reg #(Bit#(QuireWidth)) rg_quire)(FDA_PNE_Quire);
@@ -70,9 +70,8 @@ rule rl_out;
 endrule
 interface Server compute;
       interface Put request;
-         method Action put (InputTwoExtractPosit p);
-		let extOut1 = p.posit_inp_e1;
-	   	let extOut2 = p.posit_inp_e2;
+         method Action put (Tuple2#(Extracted_Posit, Extracted_Posit) p);
+                match {.extOut1, .extOut2} = p;
 		divider.inoutifc.request.put (Inputs_md {
 		sign1: extOut1.sign,
 		nanflag1: 1'b0,

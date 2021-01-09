@@ -31,14 +31,15 @@ import ClientServer :: *;
 
 import Utils :: *;
 import Multiplier_Types :: *;
+import MAC_Commons  :: *;
 import Posit_Numeric_Types :: *;
 import Posit_User_Types :: *;
 
-
+(* synthesize *)
 module mkMultiplier (Multiplier_IFC );
 	// make a FIFO to store 
-   	FIFOF #(Outputs_m )  fifo_output_reg <- mkFIFOF;
-	FIFOF #(Stage0_m )  fifo_stage0_reg <- mkFIFOF;
+   	FIFOF #(Outputs_Mul )  fifo_output_reg <- mkFIFOF1;
+	FIFOF #(Stage0_m )  fifo_stage0_reg <- mkFIFOF1;
 	//This function is used to identify nan cases
 
 	function Bit#(1) fv_check_for_nan(PositType z_i1, PositType z_i2,Bit#(1) nan1,Bit#(1) nan2 );
@@ -48,19 +49,7 @@ module mkMultiplier (Multiplier_IFC );
 		else 
 			return 1'b0;
 	endfunction
-	//This function is used to identify zer or infinity cases depending only on the flag value of inputs
 
-	function PositType fv_check_for_z_i(PositType z_i1, PositType z_i2);
-		if (z_i1 == ZERO && z_i2 == ZERO)
-			// if both inputs are zero then output is zero
-			return ZERO;
-		else if (z_i1 == INF || z_i2 == INF)
-			// if one of the inputs is infinity then output is infinity
-			return INF;
-		else 
-			return REGULAR;
-	endfunction
-	
 	//This function finds the product of the fraction bits
 	function Tuple3#(Bit#(1), Bit#(FracWidthMul4Plus2),Bit#(ScaleWidthPlus1)) fv_calculate_product_frac(Bit#(1) sgn1,Bit#(1)sgn2,Bit#(FracWidthPlus1)f1,Bit#(FracWidthPlus1)f2);
 		Bit#(FracWidthMul4Plus2)frac_product;
@@ -77,37 +66,6 @@ module mkMultiplier (Multiplier_IFC );
 		return tuple3(sgn1 ^ sgn2,(frac_product<<frac_shift),frac_shift); 
 	endfunction
 	
-	//This function checks if the scale value has exceeded the limits max and min set due to the restricted availability of regime bits
-	// fraction bits will be shifted to take care of the scale value change due to it being bounded
-	//output : bounded scale value and the shift in frac bits
-	function Tuple2#(Int#(ScaleWidthPlus1), Int#(LogFracWidthPlus1)) fv_calculate_scale_shift(Int#(ScaleWidthPlus2) scale);
-			Int#(ScaleWidthPlus1) maxB,minB,scale0;
-			Int#(LogFracWidthPlus1) frac_change;
-			//max scale value is defined here... have to saturate the scale value 
-			// max value = (N-2)*(2^es) 
-			// scale = regime*(2^es) + expo.... max value of regime = N-2(00...1)
-			maxB = fromInteger((valueOf(PositWidth) -2)*(2**(valueOf(ExpWidth))));
-			//similarly calculate the min 
-		 	minB = -maxB;
-			//frac_change gives the number of bits that are more or less than scale bounds so that we can shift the frac bits to not lose scale information 
-			if (scale < signExtend(minB))
-				begin
-				frac_change = truncate(boundedMinus(scale,signExtend(minB)));// find the change in scale to bind it 
-				scale0 = minB;//bound scale
-				end
-			else if (scale> signExtend(maxB))
-				begin
-				frac_change = truncate(boundedMinus(scale,signExtend(maxB)));// find the change in scale to bind it 
-				scale0 = maxB;//bound scale
-				end
-			else
-				begin
-				frac_change = fromInteger(0);
-				scale0 = truncate(scale);//no change
-				end
-			return tuple2(scale0,frac_change);
-
-	endfunction
 	
 	//This function finds the sum of the scale bits since the scale value has 2^scale contribution in the product
 	function Tuple2#(Int#(ScaleWidthPlus1), Int#(LogFracWidthPlus1)) fv_calculate_sum_scale(Int#(ScaleWidthPlus1 ) s1,Int#(ScaleWidthPlus1)s2,Bit#(ScaleWidthPlus1) frac_shift);
@@ -135,7 +93,7 @@ module mkMultiplier (Multiplier_IFC );
 		//taking care of corner cases for zero infinity flag
 		PositType zero_infinity_flag0 = (((dIn.frac == 0) && dIn.ziflag == REGULAR) ? ZERO :dIn.ziflag);
 		Bit#(FracWidthMul4Plus2) mask1 = frac_change0 <= 0 ?~('1<<abs(frac_change0)+1):?;                
-		let output_regf = Outputs_m {
+		let output_regf = Outputs_Mul {
 			//taking care of corner cases for nan flag 
 			nan_flag :dIn.nanflag,
 			//also include the case when fraction bit msb = 0
@@ -158,7 +116,7 @@ module mkMultiplier (Multiplier_IFC );
 
 interface Server inoutifc;
       interface Put request;
-         method Action put (Inputs_m p);
+         method Action put (Inputs_Mul p);
 		// stage_0: INPUT STAGE and fraction calculation
 		//dIn reads the values from input pipeline register 
       		let dIn = p;

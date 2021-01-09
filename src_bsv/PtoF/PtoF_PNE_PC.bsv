@@ -39,7 +39,7 @@ import PtoF_Types	:: *;
 import Extracter_Types	:: *;
 
 interface PtoF_PNE ;
-   interface Server #(Output_posit,Output_float) compute;
+   interface Server #(Extracted_Posit,Output_float) compute;
 endinterface
 
 module mkPtoF_PNE(PtoF_PNE);
@@ -53,7 +53,7 @@ rule rl_out;
 endrule
 interface Server compute;
       interface Put request;
-         method Action put (Output_posit p);
+         method Action put (Extracted_Posit p);
 		ptoF.inoutifc.request.put(p); 
          endmethod
       endinterface

@@ -39,7 +39,7 @@ typedef struct {Int#(QuireWidth) sum_calc;
 		Bit#(1) q2_nan_flag;} Stage0_a deriving(Bits,FShow);
 
 interface Adder_IFC ;
-   interface Server #(Inputs_a,Bit#(QuireWidth)) inoutifc;
+   interface Server #(Inputs_a,Quire) inoutifc;
 endinterface
 
 endpackage: Adder_Types_fused_op

@@ -41,13 +41,13 @@ import QtoP_Types	:: *;
 
 
 interface QuireToPosit_IFC;
-   interface Server #(Bit#(0),Input_value_n) inoutifc;
+   interface Server #(Bit#(0),Prenorm_Posit) inoutifc;
 endinterface
 
 module mkQuireToPosit #(Reg #(Bit#(QuireWidth))  rg_quire) (QuireToPosit_IFC );
-	FIFOF #(Input_value_n )  fifo_output_reg <- mkFIFOF;
-	FIFOF #(Stage0_qp )  fifo_stage0_reg <- mkFIFOF;
-	FIFOF #(Input_value_n )  fifo_stage1_reg <- mkFIFOF;
+	FIFOF #(Prenorm_Posit )  fifo_output_reg <- mkFIFOF1;
+	FIFOF #(Stage0_qp )  fifo_stage0_reg <- mkFIFOF1;
+	FIFOF #(Prenorm_Posit )  fifo_stage1_reg <- mkFIFOF1;
 	Int#(ScaleWidthPlus1) maxB,minB;
 	//max scale value is defined here... have to saturate the scale value 
 	// max value = (N-2)*(2^es) 
@@ -129,7 +129,7 @@ module mkQuireToPosit #(Reg #(Bit#(QuireWidth))  rg_quire) (QuireToPosit_IFC );
 				truncated_frac_zero0 = 1'b0;
 			end
 		// data to be stored in stored in fifo that will be used in stage 1		
-		let stage1_regf = Input_value_n  {
+		let stage1_regf = Prenorm_Posit  {
 			sign : dIn.sign,
 			nan_flag : dIn.nan_flag,
 			zero_infinity_flag : dIn.zero_infinity_flag,
@@ -146,7 +146,7 @@ module mkQuireToPosit #(Reg #(Bit#(QuireWidth))  rg_quire) (QuireToPosit_IFC );
 	rule stage_2;
 		//normalizes the posit field
 		let dIn = fifo_stage1_reg.first;  fifo_stage1_reg.deq;
-		fifo_output_reg.enq(Input_value_n {
+		fifo_output_reg.enq(Prenorm_Posit {
 		sign: dIn.sign,
 	 	zero_infinity_flag: dIn.zero_infinity_flag ,
 		nan_flag: dIn.nan_flag,

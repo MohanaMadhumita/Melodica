@@ -39,7 +39,7 @@ typedef struct {Bit#(FloatWidth) float_out;
 		Bool rounding;} Output_float deriving(Bits,FShow);
 
 interface PtoF_IFC ;
-   interface Server #(Output_posit,Output_float) inoutifc;
+   interface Server #(Extracted_Posit,Output_float) inoutifc;
 endinterface
 
 

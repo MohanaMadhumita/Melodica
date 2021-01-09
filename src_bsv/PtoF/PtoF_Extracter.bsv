@@ -78,13 +78,13 @@ module mkPtoF_Extracter (PtoF_IFC );
 		//Zero infinity flag
 		zero_infinity_flag: dIn.zero_infinity_flag == REGULAR? (float_no == 0? ZERO: (float_no == {'1,frac_zero}? INF: REGULAR)): dIn.zero_infinity_flag,
 		//rounnding bit
-		rounding: unpack(add_round)}
+		rounding: unpack(add_round)};
 		fifo_output_reg.enq(output_regf);	
 	endrule
 	
 interface Server inoutifc;
       interface Put request;
-         method Action put (Output_posit p);
+         method Action put (Extracted_Posit p);
 		let extOut = p;
 		//get extractor output
 		//calculate scale for posits and frac shift due to restrictions on scale sizes
