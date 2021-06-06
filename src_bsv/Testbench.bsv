@@ -3,7 +3,7 @@ package Testbench;
 import GetPut       :: *;
 import ClientServer :: *;
 
-import PositCore ::*;
+import PAC_sched_tcm ::*;
 import Posit_Numeric_Types :: *;
 import FloatingPoint :: *;
 import Utils  :: *;
@@ -11,27 +11,24 @@ import Utils  :: *;
 (* synthesize *)
 module mkTestbench (Empty);
 
-	PositCore_IFC pc <- mkPositCore(2);
-	Reg #(Bit #(5)) rg_y <- mkReg (0);
-	rule rl_gen;
-		FloatingPoint::RoundMode round_mode = Rnd_Nearest_Even;
-		PositCmds opcodes = FMA_P;
-		//FSingle f1 = fromReal(2.5);
-		//FSingle f2 = fromReal(4);
-		PositCore::FloatU in1 = tagged P 32'h60006000;
-		PositCore::FloatU in2 = tagged P 32'h54005400;
-		let inp_posit = tuple4(in1,in2,round_mode,opcodes);
-		pc.server_core.request.put (inp_posit);
-		$display("%0d: in1 %h in2 %h opcode %b",cur_cycle,tpl_1(inp_posit).P,tpl_2(inp_posit).P,tpl_4(inp_posit));
+	Scheduler_IFC scheduler <- mkSched;
+	Reg#(int) count <- mkReg(2);
 
-   	endrule
+	rule instr(count!=0);
+		Instruction inst1 = tuple7(DOT_P, 16'h0001,
+					 128'h00000000000000000000000000000400,	//columns in A
+					 128'h00000000000000000000000000000001,	//Rows in A
+					 16'h0001,
+					 128'h00000000000000000000000000000001, //columns in B
+					 128'h00000000000000000000000000000400	//Rows In B
+						);
+//ffO_Instr.enq(tuple7(DOT_P, 16'h0011, 128'h00000000000000000000000000000008,  128'h00000000000000000000000000000004,16'h0011,  128'h00000000000000000000000000000008,  128'h00000000000000000000000000000008));
+		scheduler.server_sched.request.put(inst1);
+		count <= count - 1;
+	$display("rule Insr",$time);		
+	endrule
+	
 
-	   rule rl_drain(rg_y < 1);
-	      let z <- pc.server_core.response.get ();
-		$display("%0d: out %h exception %b",cur_cycle,tpl_1(z).P,tpl_2(z));
-		rg_y <= rg_y + 1;
-		$finish;
-	   endrule
 
 endmodule
 
